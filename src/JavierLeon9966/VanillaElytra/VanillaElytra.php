@@ -18,6 +18,7 @@ use pocketmine\item\{ArmorTypeInfo, ItemIdentifier, ItemTypeIds, StringToItemPar
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataProperties;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\{ClosureTask, TaskHandler};
+use DAC\API\player\PlayerBases;
 use pocketmine\world\format\io\GlobalItemDataHandlers;
 
 use JavierLeon9966\VanillaElytra\item\Elytra;
@@ -98,11 +99,13 @@ final class VanillaElytra extends PluginBase implements Listener{
 			$this->glidingTicker[$rawUUID] = $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(static function() use($armorInventory, $player): void{
 				if($player->hasFiniteResources() and ($elytra = $armorInventory->getChestplate()) instanceof Elytra and $elytra->applyDamage(1)){
 					$armorInventory->setChestplate($elytra);
+					PlayerBases::setGliding($player, true);
 				}
 			}), 20);
 		}else{
 			($this->glidingTicker[$rawUUID] ?? null)?->cancel();
 			unset($this->glidingTicker[$rawUUID]);
+			PlayerBases::setGliding($player, false);
 		}
 	}
 
@@ -113,5 +116,6 @@ final class VanillaElytra extends PluginBase implements Listener{
 		$rawUUID = $event->getPlayer()->getUniqueId()->getBytes();
 		($this->glidingTicker[$rawUUID] ?? null)?->cancel();
 		unset($this->glidingTicker[$rawUUID]);
+		PlayerBases::setGliding($event->getPlayer(), false);
 	}
 }
